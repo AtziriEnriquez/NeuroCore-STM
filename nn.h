@@ -4,6 +4,8 @@
 
 // Hard-coded for the NN implementation in nn.c
 #define NN_INPUTS (2)
+#define NN_HIDDEN (2)
+#define NN_OUTPUTS (1)
 
 // Quantize the floating-point based NN architecture to work with int8_t,
 // which is an 8-bit signed value ranging from -128 to 127.  Observe the 

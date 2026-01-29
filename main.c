@@ -11,6 +11,12 @@
 
 #include "stm32f042k6.h"
 
+// Counts total SysTick events since reset (incremented in SysTick context)
+volatile uint16_t systick_events = 0;
+
+// Flag set by SysTick to tell main() to run one “lap” of the update code
+volatile bool systick_update = false;
+
 // Send a character to the terminal window
 int __io_putchar(int data) {
   usart2_tx((uint8_t)data);
@@ -20,7 +26,20 @@ int __io_putchar(int data) {
 // Callback function for systick exceptions registered in systick_init()
 // Toggle the onboard green LED and start an ADC conversion
 void systick_callback_function(void) {
-    led_toggle(LED_USER);
+    // Counts 100 ms ticks
+    static uint8_t led_tick_count = 0;
+
+    // Count every SysTick event and request one update in main()
+    systick_events++;
+    systick_update = true;
+
+    // (5 * 100 ms = 500 ms) -> toggle at 2 Hz (twice a second) -> visible blink at 1 Hz
+    // For an LED to "blink" it has to change state twice per cycle
+    led_tick_count++;
+    if (led_tick_count >= 5) {
+        led_toggle(LED_USER);
+        led_tick_count = 0;
+    }
 }
 
 // Callback function and global flag for USART receive data events,
@@ -59,10 +78,9 @@ int main(void) {
     __asm("cpsie i");
 
     // Banner
-    printf("Lab 4: Quantized NN - press any key:\n");
-
+    printf("Lab 4: Quantized NN - Continuous Sampling:\n");
     while( 1 ) {
-        if( keypressed ) {
+        if( systick_update ) {
            
             // Sample the analog signal on Port A Pin 0, returns a "raw counts" value
             // in the range 0-4095 based on an input voltage in the range 0 - 3.3 V
@@ -114,10 +132,10 @@ int main(void) {
             int16_t result = ((int16_t)qresult * 100) / QNN_SCALE_FACTOR;
 
             // Display the Qm.n inputs and result using signed integer format (printf() float support is not enabled!)
-            printf("in[0]: %d, in[1]: %d, result: %d\n", ch0, ch1, result);
+            printf("count: %d, in[0]: %d, in[1]: %d, result: %d\n",  systick_events, ch0, ch1, result);
 
-            // Clear the 'keypressed' flag
-            keypressed = false;
+            // Clear the 'systick_update' flag
+            systick_update = false;
         }
     }
 }

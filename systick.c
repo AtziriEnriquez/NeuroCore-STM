@@ -7,11 +7,12 @@ void systick_init(void(*cbfn)(void)) {
     // register the callback function
     systick_cbfn = cbfn;
 
-    // Configure a 2 Hz SysTick event by dividing HCLK/8 = 6 MHz by 
-    // 3 million.  Note we have to subtract 1 from the desired divisor
+    // SysTick clock = HCLK/8 = 48 MHz / 8 = 6 MHz
+    // 100 ms period -> 0.1 s * 6,000,000 = 600,000 counts
+    // RVR must be set to (count − 1)
     // per the STM32F042K6 programming manual section 4.4.2 
     // register description
-    SYSTICK->RVR = 3000000-1;
+    SYSTICK->RVR = 600000 - 1;
     // Switch to the "external clock source" (HCLK/8 = 6 MHz), 
     // enable the counter,
     // and enable an exception request when the counter reaches 0
