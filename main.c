@@ -33,9 +33,6 @@ void systick_callback_function(void) {
     // Count every SysTick event and request one update in main()
     systick_events++;
     systick_update = true;
-
-    // Start an ADC conversion on channel 0
-    adc_convert(ADC_CH0);
     
     // (5 * 100 ms = 500 ms) -> toggle at 2 Hz (twice a second) -> visible blink at 1 Hz
     // For an LED to "blink" it has to change state twice per cycle
@@ -44,6 +41,10 @@ void systick_callback_function(void) {
         led_toggle(LED_USER);
         led_tick_count = 0;
     }
+    
+    // Start an ADC conversion on channel 0
+    adc_convert(ADC_CH0);
+
     gpio_pin_reset(GPIOA, gpio_pin_3);
 }
 
