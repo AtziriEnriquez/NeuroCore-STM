@@ -135,8 +135,18 @@ int main(void) {
             // If the maximum ch0 value is 4095, and we did (ch0/4095) as integer division
             // we would get 1 if ch0 = 4095, or 0 if ch0 < 4095 (because it is integer division)
             // Instead we scale _up_ first, then divide, leaving us with a Q3.4 result!
-            uint16_t scaled0 = (ch0 * QNN_SCALE_FACTOR)/4095;
-            uint16_t scaled1 = (ch1 * QNN_SCALE_FACTOR)/4095;
+
+            // Concurrency note:
+            // We do not disable interrupts in this lab. Clearing the run_prediction flag is safe;
+            // if an interrupt sets it again, the prediction will simply run on the next loop.
+            // To avoid mixing ADC samples, ch0 and ch1 are copied into local variables before
+            // scaling
+
+            uint16_t ch0_local = ch0;
+            uint16_t ch1_local = ch1;
+
+            uint16_t scaled0 = (ch0_local * QNN_SCALE_FACTOR)/4095;
+            uint16_t scaled1 = (ch1_local * QNN_SCALE_FACTOR)/4095;
 
             // Now cast these at int8_t - we can discard the extra bits because we've just 
             // normalized the Qm.n in int8_t to represent the value 0.0 -> 1.0
