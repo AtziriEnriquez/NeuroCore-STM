@@ -1,34 +1,59 @@
-Fork this repo to your Dartmouth GitHub account, then clone your copy of the repo to your ENGS-62 workspace on your personal computer.  
+# NeuroCore-STM  
+Fixed-Point Neural Network Inference on STM32F042K6
 
-***Be sure you are cloning your copy of the repo, and not the main course repo! You will not be able to save/submit your work if you clone the main course repo:***
+NeuroCore-STM is a bare-metal C implementation of a quantized neural network running on an STM32F042K6 (ARM Cortex-M0).  
+The project demonstrates how floating-point models can be translated into deterministic, fixed-point embedded firmware without using vendor HAL libraries.
 
-OSX: open terminal and change into your ENGS-62-workspace folder (mine is in my Documents folder under ENGS-62-workspace)
+---
 
-Win: open "git bash" and change into your ENGS-62-workspace folder 
+## Model Training & Quantization
+
+The neural network was validated and quantized in Python before being deployed to the microcontroller.
+
+See `assignment.ipynb` for:
+- Floating-point model validation
+- Quantization scaling analysis
+- Fixed-point comparison results
+- Input/output verification
+
+The notebook demonstrates how the embedded fixed-point implementation was derived and tested.
+
+---
+
+## Technical Highlights
+
+- Q-format fixed-point neural network inference
+- Integer-only math (Cortex-M0 has no FPU)
+- Register-level peripheral configuration (no STM32 HAL)
+- Interrupt-driven timing using SysTick
+- Modular embedded driver architecture
+- Python-based quantization validation
+
+---
+
+## System Architecture
+
+1. Python notebook validates quantization and scaling
+2. Weights and biases converted to fixed-point
+3. Embedded inference implemented in `nn.c`
+4. SysTick ensures deterministic execution
+5. USART used for debugging and output validation
+
+All peripherals are configured via direct register access.
+
+---
+
+## Hardware
+
+- STM32F042K6 (ARM Cortex-M0)
+- GPIO, ADC, USART, SysTick
+- Custom startup file and linker script
+
+---
+
+## Build
+
+```bash
+make
 ```
-cd ~/Documents/ENGS-62-workspace/
-git clone git@github.com:<githubid>/W26-W3-LA.git
-```
-Note that this lab does not require python.  You may skip the python intialization steps, but it does no harm to perform them if you do.
-
-OSX:
-```
-cd W26-W3-LA
-/usr/local/bin/python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-Win:
-```
-cd W26-W3-LA
-python -m venv .venv
-. .venv/Scripts/activate
-pip install -r requirements.txt
-```
-
-You can now launch VSCode and open the W26-W3-LA folder.  
-
-Be sure to install any recommended VSCode extensions (a recommendations box will pop up within the first 30-60 seconds after opening VSCode if any extensions are recommended).
-
-Begin by opening the assignment.ipynb file
+Toolchain: arm-none-eabi-gcc
